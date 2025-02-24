@@ -18,12 +18,14 @@ export const generateContent = async (data: any) => {
 
 export const publishToWordPress = async (
   wordpress: any,
-  generatedContent: any
+  generatedContent: any,
+  contentType: any
 ) => {
   try {
     const response = await axios.post(`${API_URL}/publish-to-wordpress`, {
       wordpress,
       generatedContent,
+      contentType,
     });
     return response.data;
   } catch (error) {

@@ -17,6 +17,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<any>(null);
   const [publishResult, setPublishResult] = useState<string | null>(null);
+  const [contentType, setContentType] = useState<"post" | "page">("post");
 
   const contentOptions = [
     "keywordList",
@@ -41,6 +42,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
       keywordName,
       url,
       generate: generateTypes,
+      contentType,
     };
 
     try {
@@ -75,7 +77,8 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
           username: wpUsername,
           appPassword: wpAppPassword,
         },
-        generatedContent
+        generatedContent,
+        contentType
       );
 
       setPublishResult(`✅ Published! View it here: ${response.link}`);
@@ -135,6 +138,34 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
             </label>
           </div>
         ))}
+      </div>
+
+      {/* Content Type Selector (Post or Page) */}
+      <div className="mb-4">
+        <label className="block font-semibold text-white">Content Type:</label>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center text-white">
+            <input
+              type="radio"
+              value="post"
+              checked={contentType === "post"}
+              onChange={() => setContentType("post")}
+              className="mr-2"
+            />
+            Post
+          </label>
+
+          <label className="flex items-center text-white">
+            <input
+              type="radio"
+              value="page"
+              checked={contentType === "page"}
+              onChange={() => setContentType("page")}
+              className="mr-2"
+            />
+            Page
+          </label>
+        </div>
       </div>
 
       <h3 className="text-xl font-semibold mt-6 mb-2 text-amber-400">

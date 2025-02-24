@@ -260,8 +260,7 @@ Max 55 characters;
 Follow Google Best Practices, do not keyword stuff, exclude how many in packs, and ensure meta titles are no more than 55 characters long.;
 do not mention how many in packs;
 Prompt:
-Write page title starting with {top/best} ${keywordName} to learn/explore more about the categories of sub categories of ${keywordName}.
-Title should include ${keywordList} relevant to the ${keywordName} and its sub categories under 155 characters in total.
+Write page title starting with top or npbest ${keywordName}. Title could include some keywords from ${keywordList} relevant to the ${keywordName} in natural language, readable. total length of page title must be under 55 characters in total.
 Format: {output}
 `;
               maxTokens = 20;
@@ -365,9 +364,11 @@ router.post(
     const {
       wordpress,
       generatedContent,
+      contentType,
     }: {
       wordpress: WordPressCredentials;
       generatedContent: { [key: string]: string };
+      contentType: "post" | "page";
     } = req.body;
 
     if (
@@ -398,26 +399,28 @@ router.post(
         "Content-Type": "application/json",
       };
 
+      const wpEndpoint = `${wordpress.url}/wp-json/wp/v2/${
+        contentType === "page" ? "pages" : "posts"
+      }`;
+
       const slug =
         generatedContent.pageTitle?.toLowerCase().replace(/\s+/g, "-") ||
         "generated-post";
 
       // 🔍 Step 1: Check if the post already exists by slug
-      const existingPostResponse = await axios.get(
-        `${wordpress.url}/wp-json/wp/v2/posts?slug=${slug}`,
-        {
-          headers,
-        }
+      const existingContentResponse = await axios.get(
+        `${wpEndpoint}?slug=${slug}`,
+        { headers }
       );
 
-      const existingPost = existingPostResponse.data[0]; // WordPress returns an array
+      const existingPost = existingContentResponse.data[0]; // WordPress returns an array
 
       let wpResponse;
 
       if (existingPost) {
         // 🔄 Step 2: Update existing post
         wpResponse = await axios.post(
-          `${wordpress.url}/wp-json/wp/v2/posts/${existingPost.id}`,
+          `${wpEndpoint}/${existingPost.id}`,
           {
             title: generatedContent.pageTitle || "Updated Post",
             content: generatedContent.article || "",
@@ -425,11 +428,11 @@ router.post(
           },
           { headers }
         );
-        console.log(`Post updated: ${wpResponse.data.link}`);
+        console.log(`${contentType} updated: ${wpResponse.data.link}`);
       } else {
         // ➕ Step 3: Create new post
         wpResponse = await axios.post(
-          `${wordpress.url}/wp-json/wp/v2/posts`,
+          wpEndpoint,
           {
             title: generatedContent.pageTitle || "New Post",
             content: generatedContent.article || "",
@@ -438,7 +441,7 @@ router.post(
           },
           { headers }
         );
-        console.log(`Post created: ${wpResponse.data.link}`);
+        console.log(`${contentType} created: ${wpResponse.data.link}`);
       }
 
       // ✅ Response back to client
@@ -447,19 +450,23 @@ router.post(
         wordpressPostId: wpResponse.data.id,
         link: wpResponse.data.link,
         message: existingPost
-          ? "Post updated successfully"
-          : "Post created successfully",
+          ? `${
+              contentType.charAt(0).toUpperCase() + contentType.slice(1)
+            } updated successfully`
+          : `${
+              contentType.charAt(0).toUpperCase() + contentType.slice(1)
+            } created successfully`,
       });
     } catch (error: any) {
       console.error(
-        "Error publishing to WordPress:",
+        `Error publishing ${contentType} to WordPress:`,
         error.response?.data || error.message
       );
       res.status(500).json({
         success: false,
         error:
           error.response?.data?.message ||
-          "Failed to publish content to WordPress",
+          `Failed to publish ${contentType} to WordPress`,
       });
     }
   }
