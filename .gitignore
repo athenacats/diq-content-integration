@@ -2,4 +2,4 @@ node_modules/
 dist/
 .env
 # .gitignore
-/content-generator-backend/config/service-account.json
+/content-generator-backend/config/first-presence-352823-2651a7903711.json
