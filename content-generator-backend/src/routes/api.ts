@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import OpenAI from "openai";
 import axios from "axios";
 import dotenv from "dotenv";
-import { appendToSheet } from "../utils/sheets"; // Import the helper
+import { appendToSheet } from "../utils/sheets";
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ const openai = new OpenAI({
 interface GenerateMultipleContentRequest {
   keywordName: string;
   url: string;
-  generate: string[]; // ["keywordList", "pageTitle", "metaTitle", etc.]
+  generate: string[];
   wordpress?: WordPressCredentials;
 }
 
@@ -26,16 +26,12 @@ interface WordPressCredentials {
   appPassword: string;
 }
 
-/**
- * Test Route
- */
 router.get("/test", (_req: Request, res: Response) => {
   res.json({ message: "API is working! 🚀" });
 });
 
-/**
- * Helper function to call OpenAI API
- */
+// Helper function to call OpenAI API
+
 export const callOpenAI = async (
   prompt: string,
   model: string = "gpt-3.5-turbo",
@@ -68,9 +64,8 @@ export const callOpenAI = async (
   }
 };
 
-/**
- * Helper function to generate full article with 4 API calls
- */
+// Helper function to generate full article with 4 API calls
+
 const generateFullArticle = async (
   keywordName: string,
   url: string,
@@ -189,7 +184,6 @@ Write questions and answers to the top questions related to the [category] and [
   const section4 = await callOpenAI(prompt4, model, 500);
   articleSections.push(section4);
 
-  // Combine all sections
   return articleSections.join("\n\n");
 };
 
@@ -407,18 +401,16 @@ router.post(
         generatedContent.pageTitle?.toLowerCase().replace(/\s+/g, "-") ||
         "generated-post";
 
-      // 🔍 Step 1: Check if the post already exists by slug
       const existingContentResponse = await axios.get(
         `${wpEndpoint}?slug=${slug}`,
         { headers }
       );
 
-      const existingPost = existingContentResponse.data[0]; // WordPress returns an array
+      const existingPost = existingContentResponse.data[0];
 
       let wpResponse;
 
       if (existingPost) {
-        // 🔄 Step 2: Update existing post
         wpResponse = await axios.post(
           `${wpEndpoint}/${existingPost.id}`,
           {
@@ -430,7 +422,6 @@ router.post(
         );
         console.log(`${contentType} updated: ${wpResponse.data.link}`);
       } else {
-        // ➕ Step 3: Create new post
         wpResponse = await axios.post(
           wpEndpoint,
           {
@@ -444,7 +435,6 @@ router.post(
         console.log(`${contentType} created: ${wpResponse.data.link}`);
       }
 
-      // ✅ Response back to client
       res.json({
         success: true,
         wordpressPostId: wpResponse.data.id,
