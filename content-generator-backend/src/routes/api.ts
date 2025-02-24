@@ -260,7 +260,7 @@ Max 55 characters;
 Follow Google Best Practices, do not keyword stuff, exclude how many in packs, and ensure meta titles are no more than 55 characters long.;
 do not mention how many in packs;
 Prompt:
-Write page title starting with top or npbest ${keywordName}. Title could include some keywords from ${keywordList} relevant to the ${keywordName} in natural language, readable. total length of page title must be under 55 characters in total.
+Write page title starting with top or best ${keywordName}. Title could include some keywords from ${keywordList} relevant to the ${keywordName} in natural language, readable. total length of page title must be under 55 characters in total.
 Format: {output}
 `;
               maxTokens = 20;
