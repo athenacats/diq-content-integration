@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { generateContent } from "../api";
+import { generateContent, publishToWordPress } from "../api";
 
 interface ContentFormProps {
   onContentGenerated: (content: any) => void;
@@ -14,6 +14,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
   const [wpUsername, setWpUsername] = useState("");
   const [wpAppPassword, setWpAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<any>(null);
+  const [publishResult, setPublishResult] = useState<string | null>(null);
 
   const contentOptions = [
     "keywordList",
@@ -21,6 +24,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
     "metaTitle",
     "metaDescription",
     "article",
+    "urlWiki",
   ];
 
   const handleCheckboxChange = (type: string) => {
@@ -37,23 +41,49 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
       keywordName,
       url,
       generate: generateTypes,
-      wordpress:
-        wpUrl && wpUsername && wpAppPassword
-          ? {
-              url: wpUrl,
-              username: wpUsername,
-              appPassword: wpAppPassword,
-            }
-          : undefined,
     };
 
     try {
       const result = await generateContent(requestData);
+      setGeneratedContent(result.generatedContent);
       onContentGenerated(result.generatedContent);
     } catch (err) {
       console.error("Failed to generate content:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePublishToWP = async () => {
+    if (!generatedContent) {
+      alert("Please generate content first!");
+      return;
+    }
+
+    if (!wpUrl || !wpUsername || !wpAppPassword) {
+      alert("Please fill in WordPress credentials.");
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishResult(null);
+
+    try {
+      const response = await publishToWordPress(
+        {
+          url: wpUrl,
+          username: wpUsername,
+          appPassword: wpAppPassword,
+        },
+        generatedContent
+      );
+
+      setPublishResult(`✅ Published! View it here: ${response.link}`);
+    } catch (err) {
+      console.error("Failed to publish to WordPress:", err);
+      setPublishResult("❌ Failed to publish to WordPress.");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -152,6 +182,23 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
       >
         {loading ? "Generating..." : "Generate Content"}
       </button>
+
+      {/* Publish to WordPress Button */}
+      {generatedContent && (
+        <button
+          type="button"
+          onClick={handlePublishToWP}
+          className={`w-full mt-4 py-2 bg-green-500 text-white font-bold rounded ${
+            isPublishing ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={isPublishing}
+        >
+          {isPublishing ? "Publishing..." : "Publish to WordPress"}
+        </button>
+      )}
+
+      {/* Display Publish Result */}
+      {publishResult && <p className="mt-4 text-white">{publishResult}</p>}
     </form>
   );
 };

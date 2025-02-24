@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/api"; // Adjust to your backend URL
+const API_URL = "http://localhost:4000/api";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const generateContent = async (data: any) => {
   try {
     const response = await axios.post(
@@ -12,6 +12,22 @@ export const generateContent = async (data: any) => {
     return response.data;
   } catch (error) {
     console.error("Error generating content:", error);
+    throw error;
+  }
+};
+
+export const publishToWordPress = async (
+  wordpress: any,
+  generatedContent: any
+) => {
+  try {
+    const response = await axios.post(`${API_URL}/publish-to-wordpress`, {
+      wordpress,
+      generatedContent,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error publishing to WordPress:", error);
     throw error;
   }
 };

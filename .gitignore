@@ -1,5 +1,5 @@
 node_modules/
 dist/
-.env
+/content-generator-backend/.env
 # .gitignore
 /content-generator-backend/config/first-presence-352823-2651a7903711.json
