@@ -206,7 +206,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
 
       <button
         type="submit"
-        className={`w-full py-2 bg-amber-400 text-black font-bold rounded ${
+        className={`w-full py-2 bg-amber-400 text-black font-bold rounded cursor-pointer ${
           loading ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={loading}
@@ -219,7 +219,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ onContentGenerated }) => {
         <button
           type="button"
           onClick={handlePublishToWP}
-          className={`w-full mt-4 py-2 bg-green-500 text-white font-bold rounded ${
+          className={`w-full mt-4 py-2 bg-green-500 text-white font-bold cursor-pointer rounded ${
             isPublishing ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={isPublishing}
